@@ -2,15 +2,9 @@
 	name = Noah Chasek-Macfoy
 	email = bantucaravan@gmail.com
 
-# [filter "lfs"]
-# 	clean = git-lfs clean -- %f
-# 	smudge = git-lfs smudge -- %f
-# 	process = git-lfs filter-process
-# 	required = true
 
 [core]
 	editor = code --wait
-
 [diff]
     tool = default-difftool
 [difftool "default-difftool"]
@@ -19,3 +13,22 @@
   tool = code
 [mergetool "code"]
   cmd = code --wait --merge $REMOTE $LOCAL $BASE $MERGED
+
+[alias]
+# description: file diffs from destination to incoming, but only for files that were modified from merge base to incoming. I.e.  destination file paths that will be affected in an auto merge. 
+# NB: This does NOT include files that do NOT exist in destination commit but do exist in incoming commit, thus would be created/added by the auto-merge.
+# NB: results do NOT include files that are renamed (or just simply present?) in the destination commit and not present in incoming commit. However, in this case a merge conflict will occur.
+# NB: this is different, more inclusive, than files that were modified in both dest and incom. Modified in both dest and incom are sites of potential merge conflict, but exclude modified in only incoming thus overwriting destination in an auto-merge. 
+# signature: git id-auto-merge <destination> <incoming>
+id-auto-merge = "! f() {git diff --stat $1 $2 -- $(git diff --stat --name-only $(git merge-base $1 $2) $2)}; f"
+
+
+
+
+
+
+# [filter "lfs"]
+# 	clean = git-lfs clean -- %f
+# 	smudge = git-lfs smudge -- %f
+# 	process = git-lfs filter-process
+# 	required = true
