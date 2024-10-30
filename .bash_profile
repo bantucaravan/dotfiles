@@ -12,7 +12,40 @@ alias ipython='python -m IPython' # doesn't seem to be available in shell otherw
 # USAGE: gitdiffstatus source_commit destination_commit
 # Shows files changed only in source, only in destination, and in both
 gitdiffstatus() {
-    local base=$(git merge-base $1 $2) && echo -e "\nModified in $1 only:" && git diff --name-status $base $1 | grep -v "^C" | sort | uniq | awk '{printf "%-8s %s\n", $1, $2}' && echo -e "\nModified in $2 only:" && git diff --name-status $base $2 | grep -v "^C" | sort | uniq | awk '{printf "%-8s %s\n", $1, $2}' && echo -e "\nModified in both:" && comm -12 <(git diff --name-only $base $1 | sort) <(git diff --name-only $base $2 | sort)
+    local base=$(git merge-base $1 $2)
+    
+    echo "Modified in $1 only:"
+    # Get files changed only in $1
+    files_in_1=$(comm -23 \
+        <(git diff --name-only $base $1 | sort) \
+        <(git diff --name-only $base $2 | sort))
+    if [ ! -z "$files_in_1" ]; then
+        git diff --name-status $base $1 -- $files_in_1
+    fi
+    
+    echo
+    echo "Modified in $2 only:"
+    # Get files changed only in $2
+    files_in_2=$(comm -23 \
+        <(git diff --name-only $base $2 | sort) \
+        <(git diff --name-only $base $1 | sort))
+    if [ ! -z "$files_in_2" ]; then
+        git diff --name-status $base $2 -- $files_in_2
+    fi
+    
+    echo
+    echo "Modified in both:"
+    # Get files changed in both
+    files_in_both=$(comm -12 \
+        <(git diff --name-only $base $1 | sort) \
+        <(git diff --name-only $base $2 | sort))
+    if [ ! -z "$files_in_both" ]; then
+        while IFS= read -r file; do
+            status1=$(git diff --name-status $base $1 -- "$file" | cut -f1)
+            status2=$(git diff --name-status $base $2 -- "$file" | cut -f1)
+            printf "%-8s -> %-8s %s\n" "$status1" "$status2" "$file"
+        done <<< "$files_in_both"
+    fi
 }
 
 alias gs='git status'
