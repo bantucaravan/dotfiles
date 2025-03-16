@@ -12,60 +12,60 @@
 [difftool]
 	prompt = false
 [merge]
-  tool = code
+    tool = code
 [mergetool "code"]
-  cmd = code --wait --merge $REMOTE $LOCAL $BASE $MERGED
+    cmd = code --wait --merge $REMOTE $LOCAL $BASE $MERGED
 
 [alias]
+    # USAGE: git id-auto-merge  <incoming> <destination>
+    # DOC: file diffs from destination to incoming, but only for files that were modified from merge base to incoming. I.e.  destination file paths that will be affected in an auto merge. (basically is it is set 1 and set 3 from git diffstatus below)
+    # NB: This does NOT include files that do NOT exist in destination commit but do exist in incoming commit, thus would be created/added by the auto-merge.
+    # NB: results do NOT include files that are renamed (or just simply present?) in the destination commit and not present in incoming commit. However, in this case a merge conflict will occur.
+    # NB: this is different, more inclusive, than files that were modified in both dest and incom. Modified in both dest and incom are sites of potential merge conflict, but exclude modified in only incoming thus overwriting destination in an auto-merge. 
+    # NB: quotes are to handle branch names with spaces or special characters.
+    id-auto-merge = "!f() { git diff --stat \"$2\" \"$1\" -- $(git diff --stat --name-only $(git merge-base \"$2\" \"$1\") \"$1\"); }; f"
 
-  # USAGE: git id-auto-merge  <incoming> <destination>
-  # DOC: file diffs from destination to incoming, but only for files that were modified from merge base to incoming. I.e.  destination file paths that will be affected in an auto merge. (basically is it is set 1 and set 3 from git diffstatus below)
-  # NB: This does NOT include files that do NOT exist in destination commit but do exist in incoming commit, thus would be created/added by the auto-merge.
-  # NB: results do NOT include files that are renamed (or just simply present?) in the destination commit and not present in incoming commit. However, in this case a merge conflict will occur.
-  # NB: this is different, more inclusive, than files that were modified in both dest and incom. Modified in both dest and incom are sites of potential merge conflict, but exclude modified in only incoming thus overwriting destination in an auto-merge. 
-  # NB: quotes are to handle branch names with spaces or special characters.
-  id-auto-merge = "!f() { git diff --stat \"$2\" \"$1\" -- $(git diff --stat --name-only $(git merge-base \"$2\" \"$1\") \"$1\"); }; f"
 
-
-  # https://claude.ai/chat/5eb3b570-84ad-443e-ae69-0b1a0793ce69
-  # USAGE: git diffstatus source_commit destination_commit
-  # DOC: Shows files changed only in source, only in destination, and in both
-  # TODO: maybe I should display the diffs from 1 to 2 onces I've collected the 3 sets, not the diffs from base to 1 or 2 (maybe a 3rd status for the both changed, that is the diff 1 to 2?)
-  # TODO: think about handling renamings smartly
-  # TODO: loss aversion, does it make sense to simply accept a one sided deletion (and actually isn't a 2 sided deletion really a no-diff)
-  # Special Edge Case: a file has modifications in both direction from mergebase, BUT the modifications are indepenent and almost identical, in fact the mods to source commit are a complete subset of the mods to dest commit. In this case the commits have a diff and both diverge from merge base, BUT the diff btw dest and the merge commit will be zero because all of sources changes will match changes in dest perfectly... just as there is no way to know if there is a conflict, is there no way to pre-know if there is no conflict? (because basically it is as expensive as making the merge to check if there is a merge so why not just enter the merge and check there then abort)
-  diffstatus = "!bash -c '\
-      base=$(git merge-base \"$1\" \"$2\") && \
-      echo \"Modified in $1 only:\" && \
-      files_in_1=$(comm -23 \
-          <(git diff --name-only \"$base\" \"$1\" | sort) \
-          <(git diff --name-only \"$base\" \"$2\" | sort)) && \
-      if [ ! -z \"$files_in_1\" ]; then \
-          git diff --name-status \"$base\" \"$1\" -- $files_in_1; \
-      fi && \
-      echo && \
-      echo \"Modified in $2 only:\" && \
-      files_in_2=$(comm -23 \
-          <(git diff --name-only \"$base\" \"$2\" | sort) \
-          <(git diff --name-only \"$base\" \"$1\" | sort)) && \
-      if [ ! -z \"$files_in_2\" ]; then \
-          git diff --name-status \"$base\" \"$2\" -- $files_in_2; \
-      fi && \
-      echo && \
-      echo \"Modified in both:\" && \
-      files_in_both=$(comm -12 \
-          <(git diff --name-only \"$base\" \"$1\" | sort) \
-          <(git diff --name-only \"$base\" \"$2\" | sort)) && \
-      if [ ! -z \"$files_in_both\" ]; then \
-          while IFS= read -r file; do \
-              status1=$(git diff --name-status \"$base\" \"$1\" -- \"$file\" | cut -f1); \
-              status2=$(git diff --name-status \"$base\" \"$2\" -- \"$file\" | cut -f1); \
-              printf \"%-8s -> %-8s %s\\n\" \"$status1\" \"$status2\" \"$file\"; \
-          done <<< \"$files_in_both\"; \
-      fi\
-  ' -"
+    # https://claude.ai/chat/5eb3b570-84ad-443e-ae69-0b1a0793ce69
+    # USAGE: git diffstatus source_commit destination_commit
+    # !!!! TODO: does NOT show files with spaces in them!!!!!
+    # DOC: Shows files changed only in source, only in destination, and in both
+    # TODO: maybe I should display the diffs from 1 to 2 onces I've collected the 3 sets, not the diffs from base to 1 or 2 (maybe a 3rd status for the both changed, that is the diff 1 to 2?)
+    # TODO: think about handling renamings smartly
+    # TODO: loss aversion, does it make sense to simply accept a one sided deletion (and actually isn't a 2 sided deletion really a no-diff)
+    # Special Edge Case: a file has modifications in both direction from mergebase, BUT the modifications are indepenent and almost identical, in fact the mods to source commit are a complete subset of the mods to dest commit. In this case the commits have a diff and both diverge from merge base, BUT the diff btw dest and the merge commit will be zero because all of sources changes will match changes in dest perfectly... just as there is no way to know if there is a conflict, is there no way to pre-know if there is no conflict? (because basically it is as expensive as making the merge to check if there is a merge so why not just enter the merge and check there then abort)
+    diffstatus = "!bash -c '\
+        base=$(git merge-base \"$1\" \"$2\") && \
+        echo \"Modified in $1 only:\" && \
+        files_in_1=$(comm -23 \
+            <(git diff --name-only \"$base\" \"$1\" | sort) \
+            <(git diff --name-only \"$base\" \"$2\" | sort)) && \
+        if [ ! -z \"$files_in_1\" ]; then \
+            git diff --name-status \"$base\" \"$1\" -- $files_in_1; \
+        fi && \
+        echo && \
+        echo \"Modified in $2 only:\" && \
+        files_in_2=$(comm -23 \
+            <(git diff --name-only \"$base\" \"$2\" | sort) \
+            <(git diff --name-only \"$base\" \"$1\" | sort)) && \
+        if [ ! -z \"$files_in_2\" ]; then \
+            git diff --name-status \"$base\" \"$2\" -- $files_in_2; \
+        fi && \
+        echo && \
+        echo \"Modified in both:\" && \
+        files_in_both=$(comm -12 \
+            <(git diff --name-only \"$base\" \"$1\" | sort) \
+            <(git diff --name-only \"$base\" \"$2\" | sort)) && \
+        if [ ! -z \"$files_in_both\" ]; then \
+            while IFS= read -r file; do \
+                status1=$(git diff --name-status \"$base\" \"$1\" -- \"$file\" | cut -f1); \
+                status2=$(git diff --name-status \"$base\" \"$2\" -- \"$file\" | cut -f1); \
+                printf \"%-8s -> %-8s %s\\n\" \"$status1\" \"$status2\" \"$file\"; \
+            done <<< \"$files_in_both\"; \
+        fi\
+    ' -"
   
-  nice-log = "log --graph  --oneline --all"
+    graphlog = log --graph --all
 	
 
 
@@ -77,3 +77,8 @@
 # 	process = git-lfs filter-process
 # 	required = true
 
+[mergetool]
+	keepBackup = false
+[push]
+    # automatically does push --set-upstream when no remote tracking branch exists
+	autoSetupRemote = true
