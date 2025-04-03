@@ -66,6 +66,9 @@
     ' -"
   
     graphlog = log --graph --all
+
+
+    manual-premerge = "!bash ~/dotfiles/git_manual_premerge.sh"
 	
 
 
@@ -82,3 +85,5 @@
 [push]
     # automatically does push --set-upstream when no remote tracking branch exists
 	autoSetupRemote = true
+[fetch]
+	prune = true
