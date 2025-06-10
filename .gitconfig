@@ -4,30 +4,40 @@
 
 
 [core]
-	editor = code --wait
+	# editor = code --wait
+    editor = cursor --wait
 [diff]
     tool = default-difftool
 [difftool "default-difftool"]
-    cmd = code --wait --diff $LOCAL $REMOTE
+    # cmd = code --wait --diff $LOCAL $REMOTE
+    cmd = cursor --wait --diff $LOCAL $REMOTE
 [difftool]
+    # don't ask permission to open difftool app
 	prompt = false
 [merge]
-    tool = code
-[mergetool "code"]
-    cmd = code --wait --merge $REMOTE $LOCAL $BASE $MERGED
+    tool = default-mergetool
+[mergetool "default-mergetool"]
+    # cmd = code --wait --merge $REMOTE $LOCAL $BASE $MERGED
+    cmd = cursor --wait --merge $REMOTE $LOCAL $BASE $MERGED
+
 
 [alias]
     # USAGE: git id-auto-merge  <incoming> <destination>
-    # DOC: file diffs from destination to incoming, but only for files that were modified from merge base to incoming. I.e.  destination file paths that will be affected in an auto merge. (basically is it is set 1 and set 3 from git diffstatus below)
-    # NB: This does NOT include files that do NOT exist in destination commit but do exist in incoming commit, thus would be created/added by the auto-merge.
+    # DOC: file diffs from destination to incoming, but only for files that were modified from merge base to incoming.  
+    # NB: This does NOT include files that do NOT exist in destination commit but do exist in incoming commit, thus would be created/added by the auto-merge. (is this true, I thought --name-status did cover this?)
     # NB: results do NOT include files that are renamed (or just simply present?) in the destination commit and not present in incoming commit. However, in this case a merge conflict will occur.
     # NB: this is different, more inclusive, than files that were modified in both dest and incom. Modified in both dest and incom are sites of potential merge conflict, but exclude modified in only incoming thus overwriting destination in an auto-merge. 
     # NB: quotes are to handle branch names with spaces or special characters.
-    id-auto-merge = "!f() { git diff --stat \"$2\" \"$1\" -- $(git diff --stat --name-only $(git merge-base \"$2\" \"$1\") \"$1\"); }; f"
+    # BUG: diff incoming does not list files deleted in incoming and lists renamed \
+    # files as merely added not listing original file. run diff —name-status, but \
+    # loop thru text match for renamed files from merge-base (and what else for \
+    # deleted from merge-base)
+    diff-incoming = "!f() { git diff --name-status \"$2\" \"$1\" -- $(git diff --name-only $(git merge-base \"$2\" \"$1\") \"$1\"); }; f"
 
     diffstatus = "!bash ~/dotfiles/git-diffstatus.sh"
   
-    graphlog = log --graph --all
+    # add --pretty to negate the effect of --oneline and get fill messages
+    graphlog = log --graph --all --oneline
 
     manual-premerge = "!bash ~/dotfiles/git-manual-premerge.sh"
 	
@@ -39,8 +49,11 @@
 
 [mergetool]
 	keepBackup = false
+
 [push]
     # automatically does push --set-upstream when no remote tracking branch exists
 	autoSetupRemote = true
+
 [fetch]
+    # automatically add --prune to git fetch
 	prune = true
