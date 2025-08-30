@@ -24,20 +24,27 @@
 [alias]
     # USAGE: git id-auto-merge  <incoming> <destination>
     # DOC: file diffs from destination to incoming, but only for files that were modified from merge base to incoming.  
-    # NB: This does NOT include files that do NOT exist in destination commit but do exist in incoming commit, thus would be created/added by the auto-merge. (is this true, I thought --name-status did cover this?)
-    # NB: results do NOT include files that are renamed (or just simply present?) in the destination commit and not present in incoming commit. However, in this case a merge conflict will occur.
-    # NB: this is different, more inclusive, than files that were modified in both dest and incom. Modified in both dest and incom are sites of potential merge conflict, but exclude modified in only incoming thus overwriting destination in an auto-merge. 
-    # NB: quotes are to handle branch names with spaces or special characters.
-    # BUG: diff incoming does not list files deleted in incoming and lists renamed \
-    # files as merely added not listing original file. run diff —name-status, but \
-    # loop thru text match for renamed files from merge-base (and what else for \
-    # deleted from merge-base)
+    # NB: this is different, more inclusive, than files that were modified in both dest and incom. Modified in \
+    # both dest and incom are sites of potential merge conflict, but exclude modified in only incoming thus \
+    # overwriting destination in an auto-merge. 
+    # NOTE: quotes provide handling for branch names with spaces or special characters.
+    # NOTE: files modified in incoming, deleted in destination are shown as added.
+    # BUG: for file deleted in destination it (a) does not show if not modified in incoming or (b) labels added if modified in incoming. (this case will raise a merge conflict bc the same lines were affected in both) Potential Solution: add a separate diff only for files deleted in the destination.
+    # BUG: for file renamed in destination it (a) does not show if not modified in incoming or (b) labels added if modified in incoming. (Q: will the raise a merge conflict?) Potential Solution: run diff —name-status, but \
+    # loop thru text match for renamed files from merge-base OR a separate diff only for filed renamed in destination.
+    # BUG: files renamed in incoming (both modified in destination and not) are shown as added only not renamed
+    # BUG: does not show files with spaces!
+    # TODO: print MERGE_BASE commit hash
     diff-incoming = "!f() { git diff --name-status \"$2\" \"$1\" -- $(git diff --name-only $(git merge-base \"$2\" \"$1\") \"$1\"); }; f"
 
     diffstatus = "!bash ~/dotfiles/git-diffstatus.sh"
   
-    # add --pretty to negate the effect of --oneline and get fill messages
-    graphlog = log --graph --all --oneline
+    # add --pretty to negate the effect of --oneline and get full messages
+    # graph log with all branches - no date and author
+    # graphlog = log --graph --all --oneline
+
+    # graph log with all branches - with date and author
+    graphlog = log --all --graph --pretty=format:'%Cgreen%ad%Creset %C(auto)%h%d %s %C(bold black)<%aN>%Creset' --date=format-local:'%Y-%m-%d %H:%M (%a)'
 
     manual-premerge = "!bash ~/dotfiles/git-manual-premerge.sh"
 	
