@@ -7,18 +7,20 @@
 	# editor = code --wait
     editor = cursor --wait
 [diff]
-    tool = default-difftool
-[difftool "default-difftool"]
-    # cmd = code --wait --diff $LOCAL $REMOTE
+    tool = cursor
+[difftool "cursor"]
     cmd = cursor --wait --diff $LOCAL $REMOTE
+[difftool "code"]
+    cmd = code --wait --diff $LOCAL $REMOTE
 [difftool]
     # don't ask permission to open difftool app
 	prompt = false
 [merge]
-    tool = default-mergetool
-[mergetool "default-mergetool"]
-    # cmd = code --wait --merge $REMOTE $LOCAL $BASE $MERGED
+    tool = cursor
+[mergetool "cursor"]
     cmd = cursor --wait --merge $REMOTE $LOCAL $BASE $MERGED
+[mergetool "code"]
+    cmd = code --wait --merge $REMOTE $LOCAL $BASE $MERGED
 
 
 [alias]
