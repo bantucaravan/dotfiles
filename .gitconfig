@@ -49,6 +49,20 @@
     graphlog = log --all --graph --pretty=format:'%Cgreen%ad%Creset %C(auto)%h%d %s %C(bold black)<%aN>%Creset' --date=format-local:'%Y-%m-%d %H:%M (%a)'
 
     manual-premerge = "!bash ~/dotfiles/git-manual-premerge.sh"
+
+    # Show diff btw <commitref> and previous commit for <file> in default difftool editor
+    # `git showtool <commitref> <path>`
+    # <path> MUST be relative to .git/ parent dir
+    # merge commit behavior is somewhat complex
+    # inspo: https://stackoverflow.com/questions/17558221/how-can-i-view-the-output-of-git-show-in-a-diff-viewer-like-meld-kdiff3-etc 
+    showtool = "!f() { git difftool $1~1 $1 -- \"$2\"; }; f"
+    ##  ALT: with path relative to CWD
+    # showtool = "!f() { \
+    # local commit=\"$1\"; \
+    # local file=\"$2\"; \
+    # local prefix=$(git rev-parse --show-prefix); \
+    # git difftool \"$commit~1\" \"$commit\" -- \"${prefix}${file}\"; \
+    # }; f"
 	
 # [filter "lfs"]
 # 	clean = git-lfs clean -- %f
