@@ -83,3 +83,6 @@
 [fetch]
     # automatically add --prune to git fetch
 	prune = true
+[branch]
+    # sort branches by last commit date descending
+	sort = -committerdate
