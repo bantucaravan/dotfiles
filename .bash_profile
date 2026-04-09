@@ -11,6 +11,7 @@ alias ipython='python -m IPython' # doesn't seem to be available in shell otherw
 # https://claude.ai/chat/5eb3b570-84ad-443e-ae69-0b1a0793ce69
 # USAGE: gitdiffstatus source_commit destination_commit
 # Shows files changed only in source, only in destination, and in both
+# TODO: move this definition to ~/.gitconfig as a standalone bash script
 gitdiffstatus() {
     local base=$(git merge-base $1 $2)
     
