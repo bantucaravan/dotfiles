@@ -39,6 +39,14 @@
     # TODO: print MERGE_BASE commit hash
     diff-incoming = "!f() { git diff --name-status \"$2\" \"$1\" -- $(git diff --name-only $(git merge-base \"$2\" \"$1\") \"$1\"); }; f"
 
+    # USAGE: git show-changes [<base>] [<feature>] [-- <path>]
+    # DOC: shows the diff between the merge-base of <base> and <feature>, and <feature>.
+    # - git show-changes main feature       -> diff from merge-base(main, feature) to feature
+    # - git show-changes feature            -> same as above, <base> defaults to "main"
+    # - git show-changes                    -> diff from merge-base(main, HEAD) to the current working tree
+    # - append `-- path/to/file` to any of the above to restrict the diff to a single file/dir
+    show-changes = "!bash ~/dotfiles/git-show-changes.sh"
+
     diffstatus = "!bash ~/dotfiles/git-diffstatus.sh"
   
     # add --pretty to negate the effect of --oneline and get full messages
